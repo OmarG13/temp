@@ -1,0 +1,53 @@
+name: ACSC.Linux.ESXi.Velociraptor.SSH_accessor.VMs
+description: |
+  `Classication: OFFICIAL`
+  `TLP: CLEAR`
+  `Status: test` 
+    
+    This artifact allows Velociraptor to query ESXi VMs
+
+
+author: ohelg
+
+reference:
+- https://www.synacktiv.com/en/publications/vmware-esxi-forensic-with-velociraptor
+
+type: NOTEBOOK
+
+sources:
+    - notebook:
+      - type: vql
+        name: ESXi Upload logs
+        template: |
+            
+            LET ssh_hostname = ""
+            LET ssh_username = ""
+            LET ssh_password = ""
+            LET ssh_keyfile = ""
+            LET config_file = "/etc/vmsyslog.conf"
+            LET config_file_regex = "logdir="
+            
+            
+            LET SSH_CONFIG <=dict(
+                hostname=ssh_hostname,
+                username=ssh_username,
+                private_key=read_file(filename=ssh_keyfile))
+            
+
+            // USE THE BELOW IF YOU ARE USING A PASSWORD
+            // LET SSH_CONFIG <=dict(
+            //    hostname=ssh_hostname,
+            //    username=ssh_username,
+            //    password=ssh_password)
+
+
+            LET _ <= remap(config='''
+            remappings:
+                - type: mount
+                  from:
+                    accessor: ssh 
+                  on: 
+                    accessor: auto
+            ''')
+
+            SELECT * FROM glob(globs="/*")
