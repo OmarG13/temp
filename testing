@@ -1,47 +1,32 @@
 name: SSHExecuteLSWithoutSSHPass
-description: |
-  A notebook that uses execve() to SSH into a remote system using a username and password
-  and runs the 'ls' command on a specified directory without sshpass.
 type: CLIENT
-notebook:
-  - name: Collect SSH Configuration
-    description: |
-      This cell collects the hostname, username, password, and the directory to list.
-    parameters:
-      - name: ssh_host
-        description: Enter the IP address or hostname of the target system
-        type: string
-      - name: ssh_user
-        description: Enter the SSH username
-        type: string
-      - name: ssh_password
-        description: Enter the SSH password
-        type: string
-      - name: directory
-        description: Enter the directory to list (default: home directory)
-        type: string
-        default: "~"
-    query: |
-      LET config = {
-        "ssh_host": ssh_host,
-        "ssh_user": ssh_user,
-        "ssh_password": ssh_password,
-        "directory": directory
-      }
-  - name: Execute SSH Command
-    description: |
-      This cell uses execve() to echo the password into the SSH command and executes the 'ls' command on the remote system.
+description: |
+  This artifact uses execve() to SSH into a remote system using a username and password,
+  and runs the 'ls' command on a specified directory without requiring sshpass.
+parameters:
+  - name: ssh_host
+    description: Enter the IP address or hostname of the target system
+    type: string
+  - name: ssh_user
+    description: Enter the SSH username
+    type: string
+  - name: ssh_password
+    description: Enter the SSH password
+    type: string
+  - name: directory
+    description: Enter the directory to list (default: home directory)
+    type: string
+    default: "~"
+sources:
+  - precondition: |
+      SELECT os_type FROM info()
+      WHERE os_type = "linux" OR os_type = "darwin"
     query: |
       SELECT * FROM execve(
         args=["bash", "-c", concat(
-          "'echo ", config.ssh_password, " | ssh -tt ",
-          config.ssh_user, "@", config.ssh_host, " ls ", config.directory, "'"
+          "'echo ", ssh_password, " | ssh -tt ",
+          ssh_user, "@", ssh_host, " ls ", directory, "'"
         )],
         cwd="",
         stdout=TRUE
       )
-  - name: Display Results
-    description: |
-      This cell displays the output of the executed SSH command.
-    query: |
-      SELECT stdout FROM previous()
