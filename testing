@@ -160,16 +160,8 @@ sources:
           SELECT * FROM remote(
             accessor="SSH",
             hostname=parameters.TargetDevice,
-            query={
-              SELECT * FROM foreach(
-                row={
-                  SELECT Path AS file_path 
-                  FROM glob(globs=[parameters.TargetDirectory + "/*"])
-                },
-                query={
-                  SELECT * FROM stat(path=row.file_path) |
-                  SELECT * FROM collect(path=row.file_path)
-                }
-              )
-            }
+            query="SELECT * FROM foreach(
+                      row=(SELECT Path AS file_path FROM glob(globs=[\"" + parameters.TargetDirectory + "/*\"])),
+                      query=\"SELECT * FROM stat(path=row.file_path) | SELECT * FROM collect(path=row.file_path)\"
+                  )"
           )
