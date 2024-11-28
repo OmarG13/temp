@@ -1,7 +1,7 @@
 name: Custom2.ESXi.Collector
 author: "ohelg"
 description: |
-   SSH to run command
+   SSH Collector
  
 type: CLIENT
  
@@ -18,8 +18,7 @@ parameters:
   - name: ssh_key
     description: account private SSH key
     default:
-  - name: Command
-    default: "ls -l /"    
+
 
   - name: OS
     default: Windows
