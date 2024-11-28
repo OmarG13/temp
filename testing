@@ -30,3 +30,108 @@ sources:
         cwd="",
         stdout=TRUE
       )
+
+
+
+
+---
+name: CollectMemoryAndDiskImages
+description: Collect memory and disk images from a Linux device over SSH.
+type: VQL
+parameters:
+  - name: TargetDevice
+    type: string
+    description: The SSH hostname or IP of the target device.
+queries:
+  - name: CollectMemoryDump
+    description: Collect memory dump using LiME or dd.
+    query: |
+      LET mem_path = "/tmp/memory_dump.lime"
+      SELECT * FROM remote(
+        accessor="SSH",
+        hostname=parameters.TargetDevice,
+        commands=[
+          {
+            cmd: "modprobe lime path=/tmp/memory_dump.lime format=lime",
+            description: "Load LiME kernel module for memory dumping."
+          },
+          {
+            cmd: "ls -lh /tmp/memory_dump.lime",
+            description: "Verify memory dump size."
+          }
+        ],
+        file_collect=[{path: mem_path, name: "memory_dump.lime"}]
+      )
+  - name: CollectDiskImage
+    description: Collect disk image using dd.
+    query: |
+      LET disk_image_path = "/tmp/disk_image.img"
+      SELECT * FROM remote(
+        accessor="SSH",
+        hostname=parameters.TargetDevice,
+        commands=[
+          {
+            cmd: "dd if=/dev/sda of=/tmp/disk_image.img bs=1M status=progress",
+            description: "Create a disk image of /dev/sda."
+          },
+          {
+            cmd: "ls -lh /tmp/disk_image.img",
+            description: "Verify disk image size."
+          }
+        ],
+        file_collect=[{path: disk_image_path, name: "disk_image.img"}]
+      )
+
+
+
+
+---
+name: SSH_KapeFiles_Hunt
+description: Collect files from a directory on a Linux host using SSH accessor.
+type: VQL
+parameters:
+  - name: TargetDevice
+    type: string
+    description: The SSH hostname or IP of the target device.
+  - name: DirectoryToCollect
+    type: string
+    description: Directory path to collect files from.
+queries:
+  - name: CollectFilesOverSSH
+    description: Use SSH to collect files from a specified directory using Linux.KapeFiles.CollectFromDirectory.
+    query: |
+      SELECT * FROM remote(
+        accessor="SSH",
+        hostname=parameters.TargetDevice,
+        artifact="Linux.KapeFiles.CollectFromDirectory",
+        args={
+          "directory": parameters.DirectoryToCollect
+        }
+      )
+
+
+name: SSHCollectFromDirectory
+type: VQL
+parameters:
+  - name: TargetDevice
+    type: string
+    description: The SSH hostname or IP of the target device.
+  - name: TargetDirectory
+    type: string
+    description: The directory path to collect files from.
+queries:
+  - name: CollectFilesOverSSH
+    description: Use SSH accessor to collect files from a remote Linux system.
+    query: |
+      SELECT * FROM remote(
+        accessor="SSH",
+        hostname=parameters.TargetDevice,
+        query={
+          SELECT * FROM ArtifactCollector(
+            artifact="Linux.KapeFiles.CollectFromDirectory",
+            parameters={
+              "BasePath": parameters.TargetDirectory
+            }
+          )
+        }
+      )
