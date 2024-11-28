@@ -142,6 +142,17 @@ queries:
 
 AGAIN
 
+---
+name: SSHCollectFilesFromDirectory
+type: VQL
+parameters:
+  - name: TargetDevice
+    type: string
+    description: The SSH hostname or IP of the target device.
+  - name: TargetDirectory
+    type: string
+    description: The directory path to collect files from.
+queries:
   - name: CollectFilesOverSSH
     description: List and collect files from a remote directory over SSH.
     query: |
@@ -159,3 +170,4 @@ AGAIN
           )
         }
       )
+
