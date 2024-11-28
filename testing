@@ -165,3 +165,27 @@ sources:
                       query=\"SELECT * FROM stat(path=row.file_path) | SELECT * FROM collect(path=row.file_path)\"
                   )"
           )
+
+
+
+and AGAIN
+
+
+
+LET SSH_CONFIG <= dict(
+  hostname='localhost:22',
+  username='mic',
+  private_key=read_file(filename='/home/mic/.ssh/id_rsa')
+)
+
+# Query to collect files using the Kapefiles artifact
+SELECT OSPath FROM glob(accessor="ssh", globs="/*")
+
+# Use the Linux.Kapefiles.CollectFromDirectory artifact to collect files from the remote machine
+LET artifact_result <= Linux.Kapefiles.CollectFromDirectory(
+    directory='/path/to/directory',  # specify the directory you want to collect files from
+    accessor=SSH_CONFIG
+)
+
+# Output collected files
+SELECT artifact_result
