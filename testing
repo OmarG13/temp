@@ -135,3 +135,27 @@ queries:
           )
         }
       )
+
+
+
+
+
+AGAIN
+
+  - name: CollectFilesOverSSH
+    description: List and collect files from a remote directory over SSH.
+    query: |
+      SELECT * FROM remote(
+        accessor="SSH",
+        hostname=parameters.TargetDevice,
+        query={
+          LET file_paths = SELECT Path AS file_path FROM glob(globs=[parameters.TargetDirectory + "/*"])
+          SELECT * FROM foreach(
+            row=file_paths,
+            query={
+              SELECT * FROM stat(path=row.file_path) |
+              SELECT * FROM collect(path=row.file_path)
+            }
+          )
+        }
+      )
