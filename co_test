@@ -162,5 +162,40 @@ sources:
         script=cmd
       )
 
+--------------------------------------
+
+name: Custom.DiskCollectUsingSSH
+type: CLIENT
+parameters:
+  - name: Host
+    default: ''
+    type: TEXT
+  - name: Username
+    default: ''
+    type: TEXT
+  - name: Password
+    default: ''
+    type: TEXT
+  - name: DiskDevice
+    default: '/dev/sda'
+    type: TEXT
+  - name: OutputPath
+    default: '/tmp/disk_image.dd'
+    type: TEXT
+sources:
+  - query: |
+      LET params = scope()
+      SELECT * FROM ssh(
+        hostname=params.Host,
+        username=params.Username,
+        password=params.Password,
+        argv=["/bin/sh", "-c", format("dd if=%s of=%s", params.DiskDevice, params.OutputPath)]
+      )
+  - query: |
+      LET params = scope()
+      SELECT * FROM glob(
+        globs=params.OutputPath,
+        accessor="file"
+      ) AS files
 
 
