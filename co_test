@@ -130,3 +130,37 @@ sources:
       FROM scope()
 
 
+----------------------------
+
+
+name: Custom.DiskCollectUsingBashShell
+type: CLIENT
+parameters:
+  - name: Host
+    default: ''
+    type: TEXT
+  - name: Username
+    default: ''
+    type: TEXT
+  - name: Password
+    default: ''
+    type: TEXT
+  - name: DiskDevice
+    default: '/dev/sda'
+    type: TEXT
+  - name: OutputPath
+    default: '/tmp/disk_image.dd'
+    type: TEXT
+sources:
+  - query: |
+      LET params = scope()
+      SELECT
+        linux.sys.bashshell(
+          hostname=params.Host,
+          username=params.Username,
+          password=params.Password,
+          script=format("dd if=%s of=%s", params.DiskDevice, params.OutputPath)
+        ) AS result
+      FROM scope()
+
+
