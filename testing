@@ -218,3 +218,25 @@ LET _ <= write_file(
 )
 
 SELECT * FROM DISK_IMAGE
+
+--------------------------------------------
+
+LET SSH_CONFIG <= dict(
+  hostname=ssh_hostname,
+  username=ssh_username,
+  password=ssh_password
+)
+
+LET RESULT <= collect(
+  artifact="Generic.Client.ExecuteCommand",
+  parameters=dict(
+    Command=format(
+      "sshpass -p {password} ssh -o StrictHostKeyChecking=no {username}@{hostname} 'dd if=/dev/sda bs=1M | gzip -c'",
+      SSH_CONFIG
+    ),
+    Args=[],
+    Timeout=3600
+  )
+)
+
+SELECT * FROM RESULT
