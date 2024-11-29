@@ -1,0 +1,33 @@
+name: Custom.DiskCollectUsingDD
+type: COMPOUND
+parameters:
+  - name: Host
+    default: ''
+    type: TEXT
+  - name: Username
+    default: ''
+    type: TEXT
+  - name: Password
+    default: ''
+    type: TEXT
+  - name: DiskDevice
+    default: '/dev/sda'
+    type: TEXT
+  - name: OutputPath
+    default: '/tmp/disk_image.dd'
+    type: TEXT
+sources:
+  - precondition: select(size()>0 from clients() where Hostname=parameters.Host)
+    query: |
+      LET artifacts = [
+        {
+          "name": "SSH_Command",
+          "parameters": {
+            "hostname": parameters.Host,
+            "username": parameters.Username,
+            "password": parameters.Password,
+            "command": format("dd if=%s of=%s", parameters.DiskDevice, parameters.OutputPath)
+          }
+        }
+      ]
+      FOREACH artifact in artifacts RETURN collect_artifacts(artifact)
