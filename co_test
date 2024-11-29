@@ -65,3 +65,36 @@ sources:
         )) AS result
       FROM scope()
 
+
+
+
+name: Custom.DiskCollectUsingDD
+type: CLIENT
+parameters:
+  - name: Host
+    default: ''
+    type: TEXT
+  - name: Username
+    default: ''
+    type: TEXT
+  - name: Password
+    default: ''
+    type: TEXT
+  - name: DiskDevice
+    default: '/dev/sda'
+    type: TEXT
+  - name: OutputPath
+    default: '/tmp/disk_image.dd'
+    type: TEXT
+sources:
+  - query: |
+      SELECT
+        execve(
+          argv=["dd", "if=" + parameters.DiskDevice, "of=" + parameters.OutputPath],
+          host=parameters.Host,
+          username=parameters.Username,
+          password=parameters.Password
+        ) AS result
+      FROM scope()
+
+
