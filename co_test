@@ -154,13 +154,13 @@ parameters:
 sources:
   - query: |
       LET params = scope()
-      SELECT
-        linux.sys.bashshell(
-          hostname=params.Host,
-          username=params.Username,
-          password=params.Password,
-          script=format("dd if=%s of=%s", params.DiskDevice, params.OutputPath)
-        ) AS result
-      FROM scope()
+      LET cmd = format("dd if=%s of=%s", params.DiskDevice, params.OutputPath)
+      SELECT * FROM linux.sys.bashshell(
+        hostname=params.Host,
+        username=params.Username,
+        password=params.Password,
+        script=cmd
+      )
+
 
 
