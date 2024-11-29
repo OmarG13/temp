@@ -189,3 +189,32 @@ LET artifact_result <= Linux.Kapefiles.CollectFromDirectory(
 
 # Output collected files
 SELECT artifact_result
+-------------------------------------------------------
+
+LET SSH_CONFIG <= dict(
+  hostname=ssh_hostname,
+  username=ssh_username,
+  password=ssh_password
+)
+
+LET _ <= remap(config='''
+remappings:
+    - type: mount
+      from:
+        accessor: ssh
+      on:
+        accessor: auto
+''')
+
+LET DISK_IMAGE <= file_read(
+  path="ssh://{{ SSH_CONFIG.hostname }}/dev/sda",
+  accessor="ssh",
+  config=SSH_CONFIG
+)
+
+LET _ <= write_file(
+  filename="/path/to/local/disk_image.dd",
+  data=DISK_IMAGE.data
+)
+
+SELECT * FROM DISK_IMAGE
